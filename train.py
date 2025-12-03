@@ -21,7 +21,7 @@ results = model.train(
     name="dice_model_v1",
     exist_ok=True,
 
-    epochs=50,
+    epochs=50, # gotta get map50-95 and map50 to converge
     imgsz=640, # image size
     batch=16,
     lr0=0.001,
@@ -37,20 +37,19 @@ print(results)
 print("\n###### Running Validation ######")
 val_results = model.val()
 
-print("\n=== Validation Summary ===")
+print("\n###### Validation Metrics ######")
 precision     = val_results.results_dict.get("metrics/precision(B)", None)
 recall        = val_results.results_dict.get("metrics/recall(B)", None)
 map50         = val_results.results_dict.get("metrics/mAP50(B)", None)
 map5095       = val_results.results_dict.get("metrics/mAP50-95(B)", None)
 
-print("\n=== Validation Summary ===")
 print(f"Precision: {precision:.4f}" if precision else "Precision not found")
 print(f"Recall:    {recall:.4f}" if recall else "Recall not found")
 print(f"mAP50:     {map50:.4f}" if map50 else "mAP50 not found")
 print(f"mAP50-95:  {map5095:.4f}" if map5095 else "mAP50-95 not found")
 
 
-print("\n###### Class-wise accuracy ######")
+print("\n###### Accuracy per Class (Dice #) ######")
 for cls_id, cls_name in enumerate(model.names):
     precision = val_results.box.pr[cls_id]
     recall = val_results.box.re[cls_id]
