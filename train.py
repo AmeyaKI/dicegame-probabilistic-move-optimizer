@@ -50,10 +50,16 @@ print(f"mAP50-95:  {map5095:.4f}" if map5095 else "mAP50-95 not found")
 
 
 print("\n###### Accuracy per Class (Dice #) ######")
+metrics = val_results.box
 for cls_id, cls_name in enumerate(model.names):
-    precision = val_results.box.pr[cls_id]
-    recall = val_results.box.re[cls_id]
-    print(f"Class {cls_id} ({cls_name}): Precision={precision:.3f}, Recall={recall:.3f}")
+    precision = metrics.p[cls_id]
+    recall = metrics.r[cls_id]
+    ap50 = metrics.ap50[cls_id]
+    ap5095 = metrics.ap[cls_id]
+    
+    print(f"Class {cls_id} ({cls_name}): "
+          f"P={precision:.3f}, R={recall:.3f}, "
+          f"AP50={ap50:.3f}, AP50-95={ap5095:.3f}")
 
 print("\nBest weights saved at:")
 print("  runs/detect/dice_model_v1/weights/best.pt")
