@@ -1,4 +1,3 @@
-env
-__pycache__
-data/
-yolo_data/
+__pycache
+/data
+/env
