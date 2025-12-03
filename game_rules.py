@@ -1,18 +1,34 @@
-# List of Rules:
-# 3 1s --> 1000
-# 3 of any other # --> 100 * #
-
-# 1 1 --> 100
-# 1 5 --> 50
 import numpy as np
 from numpy import typing as npt
+
+# EDIT TO MATCH SIMULATOR NOT THEORETICAL
 class RuleEvaluator():
+    """
+    Rough List of Rules:
+    3 1s --> 1000
+    3 of any other # --> 100 * #
+
+    1 1 --> 100
+    1 5 --> 50
+    """
     DICE_VALUES = np.array([1, 2, 3, 4, 5, 6])
     
-    # check dice roll array
     def check_roll(self, dice_rolls: npt.NDArray, combined_branch=True):
-        # return value: (dice value, # of times, total pts sum)
-        
+        """Checks array of dice rolls to determine if the user rolled any dice 
+        resulting in points and if so, how many points and which combinations 
+        result in points
+
+        Args:
+            dice_rolls (npt.NDArray): numpy array of values of dice rolled
+            combined_branch (bool, optional): _description_. Defaults to True.
+            
+        Returns:
+            Tuple(int) (dice_value, num_dice, points): 
+                dice_value: number on dice face
+                num_dice: number of dice
+                points: total number of points
+        """
+                
         roll_results = []
         for dice_value in RuleEvaluator.DICE_VALUES:
             num_dice = np.count_nonzero(dice_rolls == dice_value)
@@ -36,6 +52,12 @@ class RuleEvaluator():
                     roll_results.append(result)
         
         if combined_branch and roll_results:
+            # CHANGE TO ALL POSSIBLE COMBINATIONS 
+                # if you roll [1, 3, 1000], [5, 1, 50], [5, 1, 50]
+                # combined  results: 
+                    # [1, 3, 1000] + [5, 1, 50] kept, reroll rest
+                    # [5, 1, 50] + [5, 1, 50] kept, reroll rest
+                    # etc
             total_points = sum([points for _, _, points in roll_results])
             total_dice = sum([num_dice for _, num_dice, _ in roll_results])
             roll_results.append(['all', total_dice, total_points])
