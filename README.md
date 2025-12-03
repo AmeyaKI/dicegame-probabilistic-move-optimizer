@@ -1,2 +1,2 @@
-# dicegame-probabilistic-move-optimizer
+# dicegame-move-optimizer
 (Work In-Progress)

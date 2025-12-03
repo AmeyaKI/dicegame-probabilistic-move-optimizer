@@ -1,4 +1,5 @@
-__pycache
+__pycache__
 /data
 /env
 /yolo_data
+yolo11npt
