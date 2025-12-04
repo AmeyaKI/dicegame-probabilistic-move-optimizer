@@ -3,10 +3,12 @@ import numpy as np
 from itertools import combinations_with_replacement
 from game_rules import RuleEvaluator
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 RULES = RuleEvaluator()
 DICE_TOTAL = 6
 
+### OPTIMIZATION ###
 def all_histograms(n):
     """Return all count histograms of n dice."""
     result = []
@@ -41,6 +43,7 @@ def helper(remaining_dice: int, total_points: int) -> tuple[int]:
     
     return tuple(totals)
 
+### SIMULATOR ###
 def simulator(dice_rolls: np.ndarray) -> dict | int:
     initial_rolls = RULES.check_roll(dice_rolls)
     
@@ -56,30 +59,92 @@ def simulator(dice_rolls: np.ndarray) -> dict | int:
     
     return scores_dict
 
-def create_distribution(scores: dict) -> None:
+def low_score_remover(scores: dict, begin: bool = True):
+    """Implements 350 and 1000 rule:
+        if simulated_value: 0 points (begin=True) --> need to reach 1000 else 0 pts
+        elif simulated_value: >1000 points (begin=False) -->  need to reach 350 pts else 0 pts
+    """
+    minimum = 1000 if begin else 350
     
-    first_key = next(iter(scores))
-    
-    plt.hist(scores[first_key])
-    plt.title(f"Dice Roll: {first_key}")
-    plt.xlabel("Point Distribution")
-    plt.ylabel("Frequency")
-    plt.savefig(f"Sim: {first_key}.png")
-    plt.show()
-    
+    for key, value_list in scores.items():
+        for i in range(len(value_list)): # iterate through list
+            if value_list[i] < minimum:  
+                value_list[i] = 0
+    return scores
+
+# TBD
+# def best_move(scores: dict):
+#     """Determine which move is the best by calculating statistics (tbd) from 
+#     each key's distribution in scores
+
+#     Args:
+#         scores (dict): _description_
+
+#     """
+#     ... 
     
 
+### DISTRIBUTION PLOTTER ###
+def create_distribution(scores: dict) -> None:
+    """
+    every image is one move
+
+    """
+    key = next(iter(scores))
+    # for key in scores.keys():
+    values = np.array(scores[key], dtype=int)
+    
+    unique_scores, counts = np.unique(values, return_counts=True)
+    percentages = (counts / len(values)) * 100
+    
+    #### Plotly ####
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=unique_scores,
+        y=percentages,
+        name = "Point Distribution",
+        marker_color = 'skyblue',
+        hovertemplate='%{y:.3f}% of paths<extra>Score: %{x}</extra>'
+        
+    ))
+    
+    fig.update_layout(
+        title=f"Distribution for Move: {key}",
+        xaxis_title = "Score",
+        yaxis_title = "Frequency (%)",
+        template = "plotly_white",
+        bargap = 0,
+        hovermode = "closest"
+    )
+    
+    fig.write_image(f"Distribution_{key}.png")
+    fig.show()
+    
+    #### Matplotlib ####
+    
+    # plt.hist(scores[key])
+    # plt.title(f"Dice Roll: {key}")
+    # plt.xlabel("Point Distribution")
+    # plt.ylabel("Frequency")
+    # plt.savefig(f"Sim: {key}.png")
+    # plt.show()
+
+
 def main():
-    np.random.seed(42)
-    dice_rolls = np.random.randint(1,7,6)
+    # np.random.seed(42)
+    # dice_rolls = np.random.randint(1,7,6)
+    dice_rolls = np.array([1, 1, 1, 3, 2, 3])
     
     print(f"Dice rolled: {dice_rolls}")
     
     scores_dict = simulator(dice_rolls)
     
-    print("Possible move distributions:")
+    print("Initial possible move distributions:")
     for k,v in scores_dict.items(): # type: ignore
         print(f"{k} --> {v[:10]}...")
+    
+    scores_dict = low_score_remover(scores_dict, False) # type: ignore
     
     create_distribution(scores_dict) # type: ignore
 
