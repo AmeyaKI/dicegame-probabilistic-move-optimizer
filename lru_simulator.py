@@ -44,6 +44,7 @@ def helper(remaining_dice: int, total_points: int) -> tuple[int]:
     return tuple(totals)
 
 ### SIMULATOR ###
+# TODO: Player choose to stop rolling
 def simulator(dice_rolls: np.ndarray) -> dict | int:
     initial_rolls = RULES.check_roll(dice_rolls)
     
@@ -71,17 +72,6 @@ def low_score_remover(scores: dict, begin: bool = True):
             if value_list[i] < minimum:  
                 value_list[i] = 0
     return scores
-
-# TBD
-# def best_move(scores: dict):
-#     """Determine which move is the best by calculating statistics (tbd) from 
-#     each key's distribution in scores
-
-#     Args:
-#         scores (dict): _description_
-
-#     """
-#     ... 
     
 
 ### DISTRIBUTION PLOTTER ###
@@ -104,7 +94,7 @@ def create_distribution(scores: dict) -> None:
         x=unique_scores,
         y=percentages,
         name = "Point Distribution",
-        marker_color = 'skyblue',
+        marker_color = 'darkblue',
         hovertemplate='%{y:.3f}% of paths<extra>Score: %{x}</extra>'
         
     ))
@@ -129,6 +119,18 @@ def create_distribution(scores: dict) -> None:
     # plt.ylabel("Frequency")
     # plt.savefig(f"Sim: {key}.png")
     # plt.show()
+
+
+# TBD
+def best_move(scores: dict):
+    """Determine which move is the best by calculating statistics (tbd) from 
+    each key's distribution in scores
+
+    Args:
+        scores (dict): _description_
+
+    """
+    ... 
 
 
 def main():
