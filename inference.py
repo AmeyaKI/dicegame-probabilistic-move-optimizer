@@ -4,8 +4,8 @@ import torch
 from ultralytics import YOLO # type: ignore
 import os, sys
 
-#### RUN CODE LATER _ VERIFY ###
-
+# 12/5/2025 NOTE: Works but model needs more diversified dataset
+ 
 def load_model(weights_path):
     try:
         return YOLO(weights_path)
@@ -48,7 +48,7 @@ def predict_dice_values(model, img):
 
 def main():
     weights = 'runs/yolo/dice_model_v1/weights/best.pt' # input("Enter path to weights: "")
-    custom_image_path = os.path.join(os.getcwd(), 'sample_v4.jpg') # input("Enter path to custom image: ")
+    custom_image_path = os.path.join(os.getcwd(), 'sample_v1.jpg') # input("Enter path to custom image: ")
     
     model = load_model(weights)
     
