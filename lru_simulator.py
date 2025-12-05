@@ -82,7 +82,6 @@ def create_distribution(scores: dict) -> None:
     every image is one move
 
     """
-    # key = next(iter(scores))
     for key in scores.keys():
         values = np.array(scores[key], dtype=int)
         
@@ -98,7 +97,6 @@ def create_distribution(scores: dict) -> None:
             name = "Point Distribution",
             marker_color = 'darkblue',
             hovertemplate='%{y:.3f}% of distribution<extra>Score: %{x}</extra>'
-            
         ))
         
         fig.update_layout(
@@ -138,7 +136,7 @@ def best_move(scores: dict):
 def main():
     # np.random.seed(42)
     # dice_rolls = np.random.randint(1,7,6)
-    dice_rolls = np.array([1, 1, 1, 3, 2, 3])
+    dice_rolls = np.array([1, 1, 1, 1, 1, 1])
     
     print(f"Dice rolled: {dice_rolls}")
     
@@ -148,7 +146,7 @@ def main():
     for k,v in scores_dict.items(): # type: ignore
         print(f"{k} --> {v[:10]}...")
     
-    scores_dict = low_score_remover(scores_dict, False) # type: ignore
+    scores_dict = low_score_remover(scores_dict, True) # type: ignore
     
     create_distribution(scores_dict) # type: ignore
 

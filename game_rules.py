@@ -28,6 +28,9 @@ class RuleEvaluator():
         #         points: total number of points
         # """
         counts = [np.count_nonzero(dice_rolls==v) for v in self.DICE_VALUES] # [1, 1, 1, 1, 1, 1] --> [6, 0, 0, 0, 0, 0]
+        return self.check_roll_from_counts(counts)
+    
+    def check_roll_from_counts(self, counts: list[int]) -> list[tuple[int,int,int]]:
         moves = []
         
         # Triples
