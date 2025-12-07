@@ -1,5 +1,6 @@
 from functools import lru_cache
 import numpy as np
+import pandas as pd
 from itertools import combinations_with_replacement
 from game_rules import RuleEvaluator
 import matplotlib.pyplot as plt
@@ -130,12 +131,24 @@ def best_move(scores: dict):
         scores (dict): _description_
 
     """
-    ... 
+    means = np.array([]) # array of each moves means
+    medians = np.array([]) # arrayt of each moves medians
+    
+    scores_df = pd.DataFrame(scores)
+    
+    for key in scores.keys():
+        values = np.array(scores[key], dtype=int)
+        means = np.append(means, np.mean(values))
+        medians = np.append(medians, np.median(values))
+        
+    
+    return means, medians    
 
 
 def main():
-    # np.random.seed(42)
+    np.random.seed(42)
     # dice_rolls = np.random.randint(1,7,6)
+    
     dice_rolls = np.array([1, 1, 1, 1, 1, 1])
     
     print(f"Dice rolled: {dice_rolls}")
