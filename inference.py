@@ -4,16 +4,20 @@ from ultralytics import YOLO # type: ignore
 import os
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
+import asyncio
 
 # 12/5/2025 NOTE: Works but model needs more diversified dataset
  
-def load_model(weights_path):
+# Basic Image/Model finding functions with try/except error detection 
+async def load_model(weights_path):
     try:
-        return YOLO(weights_path)
+        model = YOLO(weights_path)
     except FileNotFoundError as e:
         print(f"{e}: Model weights not found.")
+    print("Loaded weights.")
+    return model
     
-def find_custom_image(image_dir):
+async def find_image(image_dir):
     try:
         img = Image.open(image_dir)
     except FileNotFoundError as e:
@@ -21,12 +25,16 @@ def find_custom_image(image_dir):
         
     if img is None:
         raise ValueError(f"Unable to read image: {image_dir}")
-    
+
+    print("Image read.")
     return img
 
 
-def predict_dice(model, img, img_path):
-    # img = Image.open(img_path)
+
+# Predict dice values from given image
+async def predict_dice(model, img_path):
+    img = await find_image(img_path)
+    
     result = model(img_path)[0]
     boxes = result.boxes.xyxy.cpu().numpy()
     
@@ -51,9 +59,12 @@ def predict_dice(model, img, img_path):
     dice_scores_raw.sort(key=lambda x: x[2]) # sort dice by order in which they appear in image (left to right) thru x_center
     dice_values = np.array([d[0] for d in dice_scores_raw], dtype=np.int64) + 1 # get dice pred_class values
 
-    # Return: drawn img, dice_scores_raw, final dice_values 
+    # drawn img, dice_scores_raw, final dice_values 
     return img, np.array(dice_scores_raw), dice_values
 
+
+
+# Use webcam to detect images
 def use_webcam(model):
     cap = cv2.VideoCapture(0, apiPreference=cv2.CAP_AVFOUNDATION)
     
@@ -76,34 +87,49 @@ def use_webcam(model):
     cap.release()
     cv2.destroyAllWindows()
 
-def main():
-    weights = 'runs/yolo/dice_model_v2/weights/best.pt' # input("Enter path to weights: "")
-    custom_image_path = os.path.join(os.getcwd(), 'sample_v4.jpg') # input("Enter path to custom image: ")
-    
-    model = load_model(weights)
-    
-    print("Loaded weights.")
-    
-    img = find_custom_image(custom_image_path)
-    print("Image read.")
-    
-    use_webcam(model)
-    # image, dice_scores_raw, dice_values = predict_dice(model, img, custom_image_path)
-    # print("Calculated dice values.")
-        
 
-    # print(f"Holistic dice scores:\n{dice_scores_raw}")
-    
-    # if dice_values.size == 0:
-    #     print("No dice detected.")
-    # else:
-    #     print(f"Detected dice values: {dice_values}")
-        
-    # print("Displaying bounding boxes")
 
-    # plt.imshow(image)
-    # plt.axis('off')
-    # plt.show()
+async def activate_mode(mode):
+    mode = mode.strip().lower()
+    
+    async def execute_mode(model, img_path):
+        if mode == 'webcam':
+            use_webcam(model)
+        elif mode == 'image':
+            image, dice_scores_raw, dice_values = await predict_dice(model, img_path)
+            print("Calculated dice values.")
+                
+
+            print(f"Holistic dice scores:\n{dice_scores_raw}")
+            
+            if dice_values.size == 0:
+                print("No dice detected.")
+            else:
+                print(f"Detected dice values: {dice_values}")
+                
+            print("Displaying bounding boxes")
+
+            plt.imshow(image)
+            plt.axis('off')
+            plt.show()
+    return execute_mode
+
+
+
+async def main():
+    weights = 'runs/yolo/dice_model_v2/weights/best.pt' # default model weights
+    
+    model = await load_model(weights)
+    
+    mode = input("Webcam or Image: ")
+    
+    mode_on = await activate_mode(mode)
+
+    img_path = os.path.join(os.getcwd(), 'sample_v4.jpg')
+
+    await mode_on(model, img_path)
+
+
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
