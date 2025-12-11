@@ -1,6 +1,5 @@
 import numpy as np
-import cv2
-import torch
+import cv2, torch
 from ultralytics import YOLO # type: ignore
 import os
 import matplotlib.pyplot as plt
@@ -55,6 +54,28 @@ def predict_dice(model, img, img_path):
     # Return: drawn img, dice_scores_raw, final dice_values 
     return img, np.array(dice_scores_raw), dice_values
 
+def use_webcam(model):
+    cap = cv2.VideoCapture(0, apiPreference=cv2.CAP_AVFOUNDATION)
+    
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        
+        result = model(frame, save=False)
+        
+        for box in result[0].boxes:
+            x1, y1, x2, y2 = box.xyxy[0]
+            frame = cv2.rectangle(frame, [x1, y1, x2, y2], (0, 255, 0), 2)
+
+        cv2.imshow("YOLO Dice Detection", frame)
+        
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        
+    cap.release()
+    cv2.destroyAllWindows()
+
 def main():
     weights = 'runs/yolo/dice_model_v2/weights/best.pt' # input("Enter path to weights: "")
     custom_image_path = os.path.join(os.getcwd(), 'sample_v4.jpg') # input("Enter path to custom image: ")
@@ -66,22 +87,23 @@ def main():
     img = find_custom_image(custom_image_path)
     print("Image read.")
     
-    image, dice_scores_raw, dice_values = predict_dice(model, img, custom_image_path)
-    print("Calculated dice values.")
+    use_webcam(model)
+    # image, dice_scores_raw, dice_values = predict_dice(model, img, custom_image_path)
+    # print("Calculated dice values.")
         
 
-    print(f"Holistic dice scores:\n{dice_scores_raw}")
+    # print(f"Holistic dice scores:\n{dice_scores_raw}")
     
-    if dice_values.size == 0:
-        print("No dice detected.")
-    else:
-        print(f"Detected dice values: {dice_values}")
+    # if dice_values.size == 0:
+    #     print("No dice detected.")
+    # else:
+    #     print(f"Detected dice values: {dice_values}")
         
-    print("Displaying bounding boxes")
+    # print("Displaying bounding boxes")
 
-    plt.imshow(image)
-    plt.axis('off')
-    plt.show()
+    # plt.imshow(image)
+    # plt.axis('off')
+    # plt.show()
 
 if __name__ == '__main__':
     main()
